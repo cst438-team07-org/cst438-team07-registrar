@@ -78,7 +78,35 @@ public class StudentController {
 		// method to retrive the enrollments given the id 
 		// of the logged in student.
 		// Return a list of EnrollmentDTO.
-		
-        return null;
+           
+        // Check if the student exists
+        User student = userRepository.findByEmail(principal.getName());
+        if (student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+    }
+    // Retrieve enrollments for the student
+        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(student.getId());
+        
+        List<EnrollmentDTO> result = new ArrayList<>();
+        for (Enrollment e : enrollments) {
+            result.add(new EnrollmentDTO(
+                e.getEnrollmentId(),
+                e.getGrade(),
+                e.getStudent().getId(),
+                e.getStudent().getName(),
+                e.getStudent().getEmail(),
+                e.getSection().getCourse().getCourseId(),
+                e.getSection().getCourse().getTitle(),
+                e.getSection().getSectionId(),
+                e.getSection().getSectionNo(),
+                e.getSection().getBuilding(),
+                e.getSection().getRoom(),
+                e.getSection().getTimes(),
+                e.getSection().getCourse().getCredits(),
+                e.getSection().getTerm().getYear(),
+                e.getSection().getTerm().getSemester()
+            ));
+        }
+        return result;
     }
 }
