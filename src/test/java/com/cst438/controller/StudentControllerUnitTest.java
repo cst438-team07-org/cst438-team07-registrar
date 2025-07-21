@@ -1,13 +1,19 @@
 package com.cst438.controller;
 
-import com.cst438.domain.*;
+import com.cst438.domain.Course;
+import com.cst438.domain.Enrollment;
+import com.cst438.domain.EnrollmentRepository;
+import com.cst438.domain.Section;
+import com.cst438.domain.Term;
+import com.cst438.domain.User;
+import com.cst438.domain.UserRepository;
 import com.cst438.dto.EnrollmentDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.List;
 
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -40,7 +46,7 @@ class StudentControllerTest {
     String email = "stu@school.edu";
     int studentId = 123;
 
-    // 1) stub user lookup
+    // 1) stub student lookup
     User user = new User();
     user.setId(studentId);
     user.setName("Alice");
@@ -48,7 +54,7 @@ class StudentControllerTest {
     when(userRepository.findByEmail(email)).thenReturn(user);
     when(principal.getName()).thenReturn(email);
 
-    // 2) build a real Enrollment → Section → Course → Term graph
+    // 2) build Course → Term → Section → Enrollment graph
     Course course = new Course();
     course.setCourseId("CS101");
     course.setTitle("Intro");
@@ -73,42 +79,47 @@ class StudentControllerTest {
     e.setStudent(user);
     e.setSection(section);
 
+    // 3) stub repository
     when(enrollmentRepository
         .findByYearAndSemesterOrderByCourseId(year, semester, studentId))
         .thenReturn(List.of(e));
 
-    // 3) exercise
+    // 4) exercise
     List<EnrollmentDTO> dtos = controller.getSchedule(year, semester, principal);
 
-    // 4) verify
+    // 5) verify
     assertNotNull(dtos);
     assertEquals(1, dtos.size());
 
     EnrollmentDTO dto = dtos.get(0);
-    assertEquals(55,         dto.enrollmentId());
-    assertEquals("B+",       dto.grade());
-    assertEquals(studentId,  dto.studentId());
-    assertEquals("Alice",    dto.name());
-    assertEquals(email,      dto.email());
-    assertEquals("CS101",    dto.courseId());
-    assertEquals("Intro",    dto.title());
-    assertEquals(3,          dto.credits());
-    assertEquals(1,          dto.sectionId());
-    assertEquals(10,         dto.sectionNo());
-    assertEquals("Bldg",     dto.building());
-    assertEquals("101",      dto.room());
-    assertEquals("MWF 9-10", dto.times());
-    assertEquals(year,       dto.year());
-    assertEquals(semester,   dto.semester());
+    assertEquals(55,        dto.enrollmentId());
+    assertEquals("B+",      dto.grade());
+    assertEquals(123,       dto.studentId());
+    assertEquals("Alice",   dto.name());
+    assertEquals(email,     dto.email());
+    assertEquals("CS101",   dto.courseId());
+    assertEquals("Intro",   dto.title());
+    assertEquals(3,         dto.credits());
+    assertEquals(1,         dto.sectionId());
+    assertEquals(10,        dto.sectionNo());
+    assertEquals("Bldg",    dto.building());
+    assertEquals("101",     dto.room());
+    assertEquals("MWF 9-10",dto.times());
+    assertEquals(year,      dto.year());
+    assertEquals(semester,  dto.semester());
 
     verify(enrollmentRepository)
         .findByYearAndSemesterOrderByCourseId(year, semester, studentId);
   }
 
-
   @Test
   void getSchedule_studentNotFound_throws404() {
-    when(userRepository.findByEmail(anyString())).thenReturn(null);
+    // stub principal to return some non‐null name
+    String missingEmail = "noone@nowhere";
+    when(principal.getName()).thenReturn(missingEmail);
+    // now stub userRepository for that same value
+    when(userRepository.findByEmail(missingEmail)).thenReturn(null);
+
     ResponseStatusException ex = assertThrows(
         ResponseStatusException.class,
         () -> controller.getSchedule(2025, "Spring", principal)
@@ -120,27 +131,76 @@ class StudentControllerTest {
 
   @Test
   void getTranscript_success() {
-    String studentEmail = "stu@school.edu";
+    String email = "stu@school.edu";
     int studentId = 456;
 
+    // 1) stub student lookup
     User user = new User();
     user.setId(studentId);
-    user.setEmail(studentEmail);
-    when(userRepository.findByEmail(studentEmail)).thenReturn(user);
-    when(principal.getName()).thenReturn(studentEmail);
+    user.setName("Bob");
+    user.setEmail(email);
+    when(userRepository.findByEmail(email)).thenReturn(user);
+    when(principal.getName()).thenReturn(email);
 
-    Enrollment e1 = mock(Enrollment.class);
+    // 2) build two Enrollment records
+    Course course = new Course();
+    course.setCourseId("MATH100");
+    course.setTitle("Calculus");
+    course.setCredits(4);
+
+    Term term = new Term();
+    term.setYear(2024);
+    term.setSemester("Spring");
+
+    Section section = new Section();
+    section.setSectionId(2);
+    section.setSectionNo(20);
+    section.setCourse(course);
+    section.setTerm(term);
+    section.setBuilding("Math Hall");
+    section.setRoom("102");
+    section.setTimes("TTh 1-2");
+
+    Enrollment e1 = new Enrollment();
+    e1.setEnrollmentId(11);
+    e1.setGrade("A");
+    e1.setStudent(user);
+    e1.setSection(section);
+
+    Enrollment e2 = new Enrollment();
+    e2.setEnrollmentId(22);
+    e2.setGrade("B");
+    e2.setStudent(user);
+    e2.setSection(section);
+
+    // 3) stub repository
     when(enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(studentId))
-        .thenReturn(Arrays.asList(e1, e1));
+        .thenReturn(List.of(e1, e2));
 
+    // 4) exercise
     List<EnrollmentDTO> dtos = controller.getTranscript(principal);
 
+    // 5) verify
+    assertNotNull(dtos);
     assertEquals(2, dtos.size());
+
+    // spot-check first DTO
+    EnrollmentDTO dto1 = dtos.get(0);
+    assertEquals(11,         dto1.enrollmentId());
+    assertEquals("A",        dto1.grade());
+    assertEquals("MATH100",  dto1.courseId());
+    assertEquals("Calculus",  dto1.title());
+
+    verify(enrollmentRepository)
+        .findEnrollmentsByStudentIdOrderByTermId(studentId);
   }
 
   @Test
   void getTranscript_studentNotFound_throws404() {
-    when(userRepository.findByEmail(anyString())).thenReturn(null);
+    String missingEmail = "absent@none";
+    when(principal.getName()).thenReturn(missingEmail);
+    when(userRepository.findByEmail(missingEmail)).thenReturn(null);
+
     ResponseStatusException ex = assertThrows(
         ResponseStatusException.class,
         () -> controller.getTranscript(principal)
