@@ -74,7 +74,7 @@ public class StudentController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_STUDENT')")
     public List<EnrollmentDTO> getTranscript(Principal principal) {
 
-        // use the EnrollmentController findEnrollmentsByStudentIdOrderByTermId
+     // use the EnrollmentController findEnrollmentsByStudentIdOrderByTermId
 		// method to retrive the enrollments given the id 
 		// of the logged in student.
 		// Return a list of EnrollmentDTO.
