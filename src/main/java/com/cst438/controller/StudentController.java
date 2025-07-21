@@ -42,7 +42,7 @@ public class StudentController {
         if (student == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
         }
-        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterAndStudentIdOrderByCourseId(
+        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(
                 year, semester, student.getId());
         
         List<EnrollmentDTO> result = new ArrayList<>();
