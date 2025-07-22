@@ -38,8 +38,35 @@ public class StudentController {
 		// method to retrive the enrollments given the year, semester and id 
 		// of the logged in student.
 		// Return a list of EnrollmentDTO.
+        User student= userRepository.findByEmail(principal.getName()); 
+        if (student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        }
+        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(
+                year, semester, student.getId());
+        
+        List<EnrollmentDTO> result = new ArrayList<>();
+        for (Enrollment e : enrollments) {
+            result.add(new EnrollmentDTO(
+                e.getEnrollmentId(),
+                e.getGrade(),
+                e.getStudent().getId(),
+                e.getStudent().getName(),
+                e.getStudent().getEmail(),
+                e.getSection().getCourse().getCourseId(),
+                e.getSection().getCourse().getTitle(),
+                e.getSection().getSectionId(),
+                e.getSection().getSectionNo(),
+                e.getSection().getBuilding(),
+                e.getSection().getRoom(),
+                e.getSection().getTimes(),
+                e.getSection().getCourse().getCredits(),
+                e.getSection().getTerm().getYear(),
+                e.getSection().getTerm().getSemester()
+            ));
+        }
+        return result;
 
-      return null;
    }
 
    // return transcript for student
@@ -47,11 +74,39 @@ public class StudentController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_STUDENT')")
     public List<EnrollmentDTO> getTranscript(Principal principal) {
 
-        // use the EnrollmentController findEnrollmentsByStudentIdOrderByTermId
+     // use the EnrollmentController findEnrollmentsByStudentIdOrderByTermId
 		// method to retrive the enrollments given the id 
 		// of the logged in student.
 		// Return a list of EnrollmentDTO.
-		
-        return null;
+           
+        // Check if the student exists
+        User student = userRepository.findByEmail(principal.getName());
+        if (student == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+    }
+    // Retrieve enrollments for the student
+        List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(student.getId());
+        
+        List<EnrollmentDTO> result = new ArrayList<>();
+        for (Enrollment e : enrollments) {
+            result.add(new EnrollmentDTO(
+                e.getEnrollmentId(),
+                e.getGrade(),
+                e.getStudent().getId(),
+                e.getStudent().getName(),
+                e.getStudent().getEmail(),
+                e.getSection().getCourse().getCourseId(),
+                e.getSection().getCourse().getTitle(),
+                e.getSection().getSectionId(),
+                e.getSection().getSectionNo(),
+                e.getSection().getBuilding(),
+                e.getSection().getRoom(),
+                e.getSection().getTimes(),
+                e.getSection().getCourse().getCredits(),
+                e.getSection().getTerm().getYear(),
+                e.getSection().getTerm().getSemester()
+            ));
+        }
+        return result;
     }
 }
