@@ -33,40 +33,28 @@ public class StudentController {
            @RequestParam("year") int year,
            @RequestParam("semester") String semester,
            Principal principal) {
-			   
-		// use the EnrollmentController findByYearAndSemsterOrderByCourseId
-		// method to retrive the enrollments given the year, semester and id 
-		// of the logged in student.
-		// Return a list of EnrollmentDTO.
-        User student= userRepository.findByEmail(principal.getName()); 
-        if (student == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
-        }
-        List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(
-                year, semester, student.getId());
-        
-        List<EnrollmentDTO> result = new ArrayList<>();
-        for (Enrollment e : enrollments) {
-            result.add(new EnrollmentDTO(
-                e.getEnrollmentId(),
-                e.getGrade(),
-                e.getStudent().getId(),
-                e.getStudent().getName(),
-                e.getStudent().getEmail(),
-                e.getSection().getCourse().getCourseId(),
-                e.getSection().getCourse().getTitle(),
-                e.getSection().getSectionId(),
-                e.getSection().getSectionNo(),
-                e.getSection().getBuilding(),
-                e.getSection().getRoom(),
-                e.getSection().getTimes(),
-                e.getSection().getCourse().getCredits(),
-                e.getSection().getTerm().getYear(),
-                e.getSection().getTerm().getSemester()
-            ));
-        }
-        return result;
 
+       User student = userRepository.findByEmail(principal.getName());
+        // return list of EnrollmentDTOs with all fields populated
+       List<Enrollment> enrollments = enrollmentRepository.findByYearAndSemesterOrderByCourseId(year, semester, student.getId());
+       return enrollments.stream().map(e -> new EnrollmentDTO(
+               e.getEnrollmentId(),
+               e.getGrade(),
+               e.getStudent().getId(),
+               e.getStudent().getName(),
+               e.getStudent().getEmail(),
+               e.getSection().getCourse().getCourseId(),
+               e.getSection().getCourse().getTitle(),
+               e.getSection().getSectionId(),
+               e.getSection().getSectionNo(),
+               e.getSection().getBuilding(),
+               e.getSection().getRoom(),
+               e.getSection().getTimes(),
+               e.getSection().getCourse().getCredits(),
+               e.getSection().getTerm().getYear(),
+               e.getSection().getTerm().getSemester()
+               )
+       ).toList();
    }
 
    // return transcript for student
@@ -74,39 +62,26 @@ public class StudentController {
     @PreAuthorize("hasAuthority('SCOPE_ROLE_STUDENT')")
     public List<EnrollmentDTO> getTranscript(Principal principal) {
 
-     // use the EnrollmentController findEnrollmentsByStudentIdOrderByTermId
-		// method to retrive the enrollments given the id 
-		// of the logged in student.
-		// Return a list of EnrollmentDTO.
-           
-        // Check if the student exists
+        //return list of EnrollmentDTOs with all fields populated
         User student = userRepository.findByEmail(principal.getName());
-        if (student == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
-    }
-    // Retrieve enrollments for the student
         List<Enrollment> enrollments = enrollmentRepository.findEnrollmentsByStudentIdOrderByTermId(student.getId());
-        
-        List<EnrollmentDTO> result = new ArrayList<>();
-        for (Enrollment e : enrollments) {
-            result.add(new EnrollmentDTO(
-                e.getEnrollmentId(),
-                e.getGrade(),
-                e.getStudent().getId(),
-                e.getStudent().getName(),
-                e.getStudent().getEmail(),
-                e.getSection().getCourse().getCourseId(),
-                e.getSection().getCourse().getTitle(),
-                e.getSection().getSectionId(),
-                e.getSection().getSectionNo(),
-                e.getSection().getBuilding(),
-                e.getSection().getRoom(),
-                e.getSection().getTimes(),
-                e.getSection().getCourse().getCredits(),
-                e.getSection().getTerm().getYear(),
-                e.getSection().getTerm().getSemester()
-            ));
-        }
-        return result;
+        return enrollments.stream().map(e -> new EnrollmentDTO(
+                        e.getEnrollmentId(),
+                        e.getGrade(),
+                        e.getStudent().getId(),
+                        e.getStudent().getName(),
+                        e.getStudent().getEmail(),
+                        e.getSection().getCourse().getCourseId(),
+                        e.getSection().getCourse().getTitle(),
+                        e.getSection().getSectionId(),
+                        e.getSection().getSectionNo(),
+                        e.getSection().getBuilding(),
+                        e.getSection().getRoom(),
+                        e.getSection().getTimes(),
+                        e.getSection().getCourse().getCredits(),
+                        e.getSection().getTerm().getYear(),
+                        e.getSection().getTerm().getSemester()
+                )
+        ).toList();
     }
 }
