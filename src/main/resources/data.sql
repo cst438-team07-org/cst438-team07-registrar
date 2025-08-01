@@ -8,6 +8,7 @@ insert into user_table (id, name, email, password, type) values
 (3, 'ted', 'ted@csumb.edu', '$2a$10$YU83ETxvPriw/t2Kd2wO8u8LoKRtl9auX2MsUAtNIIQuKROBvltdy', 'INSTRUCTOR'),
 (4, 'sally', 'sally@csumb.edu', '$2a$10$LbnNBkctBxuHlZDdaKMW6OPIFkPHvKJ/8WaT4ZtA6KdR/ANm/dA0O', 'INSTRUCTOR'),
 (5, 'bob', 'bob@csumb.edu', '$2a$10$/CdPw/L6tWg0bNewmIFgmO2k2sZpVbYFYzvLZeT5b2o.xX2Pt78RK', 'STUDENT');
+(6, 'sama', 'sama@csumb.edu', '$2a$10$KD4L.DuOUgV7htHhHTPcJOWB4QvrOgX1oFeYHXtRdmUsq4/JhcBzO', 'STUDENT');
 
 
 
@@ -18,6 +19,7 @@ insert into course values
 ('cst363', 'Introduction to Database', 4),
 ('cst489', 'Software Engineering', 4),
 ('cst499', 'Capstone', 4),
+('cst599', 'AI Development', 4),
 ('cst393', 'Software Engineering Project', 4),
 ('cst328', 'Digital art and design', 4),
 ('cst370', 'Design and analysis algorithms', 4),
