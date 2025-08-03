@@ -7,7 +7,7 @@ insert into user_table (id, name, email, password, type) values
 (2, 'sam', 'sam@csumb.edu', '$2a$10$B3E9IWa9fCy1SaMzfg1czu312d0xRAk1OU2sw5WOE7hs.SsLqGE9O', 'STUDENT'),
 (3, 'ted', 'ted@csumb.edu', '$2a$10$YU83ETxvPriw/t2Kd2wO8u8LoKRtl9auX2MsUAtNIIQuKROBvltdy', 'INSTRUCTOR'),
 (4, 'sally', 'sally@csumb.edu', '$2a$10$LbnNBkctBxuHlZDdaKMW6OPIFkPHvKJ/8WaT4ZtA6KdR/ANm/dA0O', 'INSTRUCTOR'),
-(5, 'bob', 'bob@csumb.edu', '$2a$10$/CdPw/L6tWg0bNewmIFgmO2k2sZpVbYFYzvLZeT5b2o.xX2Pt78RK', 'STUDENT');
+(5, 'bob', 'bob@csumb.edu', '$2a$10$/CdPw/L6tWg0bNewmIFgmO2k2sZpVbYFYzvLZeT5b2o.xX2Pt78RK', 'STUDENT'),
 (6, 'sama', 'sama@csumb.edu', '$2a$10$KD4L.DuOUgV7htHhHTPcJOWB4QvrOgX1oFeYHXtRdmUsq4/JhcBzO', 'STUDENT');
 
 
@@ -36,7 +36,8 @@ insert into section (section_no, course_id, section_id, term_id, building, room,
 (2, 'cst336',  2, 10, '90',  'B105', 'M W 9-10',  'ted@csumb.edu'),
 (3, 'cst499',  3, 10, '90',  'B106', 'T Th 11-12','sally@csumb.edu'),
 (10, 'cst393', 10, 10, '92', 'B107', 'M W 2-4', 'sally@csumb.edu'),
-(11, 'cst370', 11, 10, '95', 'B110', 'F 8-10', 'ted@csumb.edu');
+(11, 'cst370', 11, 10, '95', 'B110', 'F 8-10', 'ted@csumb.edu'),
+(12, 'cst599', 12, 10, '90', 'B108', 'M W 3-5', 'ted@csumb.edu');
 
 
 -- add some open sections for Spring 2025 too
@@ -49,4 +50,5 @@ insert into section (section_no, course_id, section_id, term_id, building, room,
 (9, 'cst393',  9, 9, '01',  '209', 'T TH 2-6', 'sally@csumb.edu');
 
 
-
+-- initial enrollment of sama (user_id=6) in CST599 Fall 2025 section 12 with no grade
+INSERT INTO enrollment (section_no, user_id, grade) VALUES (12, 6, NULL);

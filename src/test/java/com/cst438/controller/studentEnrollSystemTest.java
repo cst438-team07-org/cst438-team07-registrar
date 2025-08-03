@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+
 import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,21 +26,21 @@ public class studentEnrollSystemTest {
   static final String STUDENT_EMAIL = "sama@csumb.edu"; // or "sama@..." depending on your auth
   static final String STUDENT_PASSWORD = "sama2025"; // adjust if different
 
+  // Slow mode configuration
+  private static final boolean SLOW_MO = true;             // toggle to false for fast CI runs
+  private static final long SLOW_DELAY_MS = 1200;          // milliseconds per pause
 
   WebDriver driver;
-  Wait<WebDriver> wait;
-  static final int DELAY = 2000;
-
-  Random random = new Random();
+  WebDriverWait wait;
 
   @BeforeEach
   public void setUpDriver() {
     System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_FILE_LOCATION);
     ChromeOptions opts = new ChromeOptions();
-    opts.addArguments("--remote-allow-origins=*"); // as seen in examples
+    opts.addArguments("--remote-allow-origins=*");
     driver = new ChromeDriver(opts);
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
-    wait = new WebDriverWait(driver, Duration.ofSeconds(DELAY));
+    wait = new WebDriverWait(driver, Duration.ofSeconds(20));
     driver.get(URL);
     driver.manage().window().maximize();
   }
@@ -49,9 +50,15 @@ public class studentEnrollSystemTest {
     if (driver != null) driver.quit();
   }
 
+  private void slow() {
+    if (SLOW_MO) {
+      try {
+        Thread.sleep(SLOW_DELAY_MS);
+      } catch (InterruptedException ignored) {}
+    }
+  }
+
   private void doLogin(String email, String password) {
-    // Navigate to login if not already there
-    // Adjust selectors to match your app
     WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("email")));
     emailInput.clear();
     emailInput.sendKeys(email);
@@ -61,98 +68,132 @@ public class studentEnrollSystemTest {
     passwordInput.sendKeys(password);
 
     driver.findElement(By.id("loginButton")).click();
+    slow();
+
+    // Wait for a post-login indicator (schedule/transcript links or username)
+    wait.until(ExpectedConditions.or(
+        ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(.,'Schedule')]")),
+        ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(.,'Transcript')]"))
+    ));
+    slow();
   }
 
   private void handleReactConfirmIfPresent() {
-    // The app might use a custom modal (react-confirm-alert) instead of window.alert()
-    // Try to click the "Yes" or confirmation button if visible.
     try {
       WebElement yesBtn = wait.until(ExpectedConditions.visibilityOfElementLocated(
           By.xpath("//div[contains(@class,'react-confirm-alert-button-group')]//button[.='Yes' or .='Confirm' or .='OK']")));
       yesBtn.click();
+      slow();
     } catch (Exception e) {
-      // fallback: maybe it's a native alert
       try {
         Alert alert = wait.until(ExpectedConditions.alertIsPresent());
         alert.accept();
-      } catch (Exception ignored) {
-      }
+        slow();
+      } catch (Exception ignored) {}
     }
   }
 
   @Test
   public void testStudentDropAndReEnrollCST599AndVerifyTranscript() throws InterruptedException {
-    // 1. Login as student sama
+    // 1. Login as sama
     doLogin(STUDENT_EMAIL, STUDENT_PASSWORD);
-    // optionally wait for some indicator of successful login (e.g., schedule nav showing)
-    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("nav-schedule"))); // replace with real nav id
 
-    // 2. View class schedule for Fall 2025
-    driver.findElement(By.id("nav-schedule")).click(); // adjust to actual schedule button/link
-    // set term/year if required
-    // Example: select Fall and 2025; adjust input/select IDs accordingly
-    WebElement termSelect = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("term")));
-    termSelect.clear();
-    termSelect.sendKeys("Fall"); // if a dropdown, use Select wrapper instead
-    WebElement yearInput = driver.findElement(By.id("year"));
-    yearInput.clear();
-    yearInput.sendKeys("2025");
-    driver.findElement(By.id("viewSchedule")).click(); // placeholder button to refresh schedule
+    // 2. Navigate to Schedule view
+    WebElement scheduleNav = wait.until(ExpectedConditions.elementToBeClickable(
+        By.xpath("//a[contains(., 'Schedule') or contains(., 'My Class Schedule')]")));
+    scheduleNav.click();
+    slow();
 
-    // 3. Drop enrollment for CST599 if present
-    // Locate row for CST599 and click "Drop"
+    // 3. Select Fall 2025 term and get schedule (if inputs exist)
     try {
-      WebElement dropRow = wait.until(ExpectedConditions.visibilityOfElementLocated(
-          By.xpath("//tr[./td/text()='CST599']//button[contains(.,'Drop')]")));
-      dropRow.click();
-      // handle confirmation (react-confirm or alert)
-      handleReactConfirmIfPresent();
-      // optionally wait for some success indicator (e.g., toast or table refresh)
-      Thread.sleep(1000);
-    } catch (Exception e) {
-      // If not found, maybe it wasn't enrolled yet; proceed
+      WebElement yearInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
+          By.xpath("//input[@name='year' or @placeholder='Year']")));
+      yearInput.clear();
+      yearInput.sendKeys("2025");
+      slow();
+      WebElement semesterInput = driver.findElement(By.xpath("//input[@name='semester' or @placeholder='Semester']"));
+      semesterInput.clear();
+      semesterInput.sendKeys("Fall");
+      slow();
+      WebElement getSchedule = driver.findElement(By.xpath("//button[contains(.,'Get Schedule')]"));
+      getSchedule.click();
+      slow();
+    } catch (Exception ignored) {
+      // If term selection is implicit, proceed
     }
 
-    // 4. Navigate to enroll page
-    driver.findElement(By.id("nav-enroll")).click(); // adjust ID for enrollment page
-    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("courseCode"))); // placeholder
-
-    // 5. Select CST599 and enroll for Fall 2025
-    // Fill term/year if needed here again
-    WebElement courseInput = driver.findElement(By.id("courseCode")); // e.g., input or select
-    courseInput.clear();
-    courseInput.sendKeys("CST599");
-    // If term/year needed again on this page:
-    WebElement termEnroll = driver.findElement(By.id("termEnroll"));
-    termEnroll.clear();
-    termEnroll.sendKeys("Fall");
-    WebElement yearEnroll = driver.findElement(By.id("yearEnroll"));
-    yearEnroll.clear();
-    yearEnroll.sendKeys("2025");
-
-    driver.findElement(By.id("enrollButton")).click(); // actual enroll action
-
-    // Wait for enrollment to succeed (e.g., schedule updates)
-    // Could check that CST599 now appears in schedule
+    // Wait for schedule heading/table
     wait.until(ExpectedConditions.visibilityOfElementLocated(
-        By.xpath("//tr[./td/text()='CST599']")));
+        By.xpath("//h3[contains(.,'My Class Schedule')]")));
+    slow();
 
-    // 6. Navigate to transcript
-    driver.findElement(By.id("nav-transcript")).click(); // adjust
-    wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("transcriptTable")));
+    // 4. Drop CST599 if present
+    try {
+      WebElement cst599Row = wait.until(ExpectedConditions.visibilityOfElementLocated(
+          By.xpath("//tr[.//td[contains(.,'cst599')]]")));
+      slow();
+      WebElement dropBtn = cst599Row.findElement(By.xpath(".//button[contains(.,'Drop')]"));
+      dropBtn.click();
+      slow();
+      handleReactConfirmIfPresent();
+      slow();
+    } catch (Exception ignore) {
+      // not enrolled yet, that's fine
+    }
 
-    // 7. Verify that CST599 is listed with no grade
-    WebElement transcriptRow = driver.findElement(
-        By.xpath("//tr[./td/text()='CST599']"));
+    // 5. Navigate to enrollment / open sections page
+    WebElement enrollNav = wait.until(ExpectedConditions.elementToBeClickable(
+        By.xpath("//a[contains(., 'Enroll') or contains(., 'Open Sections')]")));
+    enrollNav.click();
+    slow();
+
+    // 6. Select Fall 2025 to fetch open sections if applicable
+    try {
+      WebElement yearInputEnroll = wait.until(ExpectedConditions.visibilityOfElementLocated(
+          By.xpath("//input[@name='year' or @placeholder='Year']")));
+      yearInputEnroll.clear();
+      yearInputEnroll.sendKeys("2025");
+      slow();
+      WebElement semesterInputEnroll = driver.findElement(By.xpath("//input[@name='semester' or @placeholder='Semester']"));
+      semesterInputEnroll.clear();
+      semesterInputEnroll.sendKeys("Fall");
+      slow();
+      WebElement getSections = driver.findElement(By.xpath("//button[contains(.,'Get Sections')]"));
+      getSections.click();
+      slow();
+    } catch (Exception ignored) {
+      // term selection might be auto-handled
+    }
+
+    // 7. Find CST599 in open sections and click Add
+    WebElement cst599OpenRow = wait.until(ExpectedConditions.visibilityOfElementLocated(
+        By.xpath("//tr[.//td[contains(.,'cst599')]]")));
+    slow();
+    WebElement addBtn = cst599OpenRow.findElement(By.xpath(".//button[contains(.,'Add')]"));
+    addBtn.click();
+    slow();
+    handleReactConfirmIfPresent();
+    slow();
+
+    // 8. Navigate to Transcript
+    WebElement transcriptNav = wait.until(ExpectedConditions.elementToBeClickable(
+        By.xpath("//a[contains(., 'Transcript')]")));
+    transcriptNav.click();
+    slow();
+
+    // 9. Verify CST599 appears with no grade
+    wait.until(ExpectedConditions.visibilityOfElementLocated(
+        By.xpath("//h3[contains(.,'Transcript')]")));
+    slow();
+    WebElement transcriptRow = wait.until(ExpectedConditions.visibilityOfElementLocated(
+        By.xpath("//tr[.//td[contains(.,'cst599')]]")));
     assertNotNull(transcriptRow, "CST599 should appear in transcript after enrollment");
+    slow();
 
-    // Assume grade cell has a class or position; adjust accordingly
-    WebElement gradeCell = transcriptRow.findElement(By.xpath("./td[contains(@class,'grade') or position()=3]")); // tweak to actual
+    WebElement gradeCell = transcriptRow.findElement(By.xpath("./td[last()]"));
     String gradeText = gradeCell.getText().trim();
-
-    // Accept common no-grade representations: empty, "-", "TBD"
-    boolean noGrade = gradeText.isEmpty() || gradeText.equals("-") || gradeText.equalsIgnoreCase("TBD");
+    boolean noGrade = gradeText.isEmpty() || gradeText.equals("-") || gradeText.equalsIgnoreCase("TBD") || gradeText.equalsIgnoreCase("null");
     assertTrue(noGrade, "Expected no grade for CST599 but found: '" + gradeText + "'");
+    slow();
   }
 }
-
