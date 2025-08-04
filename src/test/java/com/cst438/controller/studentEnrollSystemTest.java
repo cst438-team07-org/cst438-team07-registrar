@@ -22,13 +22,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class studentEnrollSystemTest {
 
   static final String CHROME_DRIVER_FILE_LOCATION = "/Users/ka_l/Desktop/CST438/chromedriver-mac-arm64/chromedriver";
-  static final String URL = "http://localhost:5173"; // frontend dev server (replace if 5173 or other)
-  static final String STUDENT_EMAIL = "sama@csumb.edu"; // or "sama@..." depending on your auth
-  static final String STUDENT_PASSWORD = "sama2025"; // adjust if different
+  static final String URL = "http://localhost:5173";
+  static final String STUDENT_EMAIL = "sama@csumb.edu";
+  static final String STUDENT_PASSWORD = "sama2025";
 
   // Slow mode configuration
-  private static final boolean SLOW_MO = true;             // toggle to false for fast CI runs
-  private static final long SLOW_DELAY_MS = 1200;          // milliseconds per pause
+  private static final boolean SLOW_MO = true;
+  private static final long SLOW_DELAY_MS = 1200;
 
   WebDriver driver;
   WebDriverWait wait;
@@ -95,16 +95,16 @@ public class studentEnrollSystemTest {
 
   @Test
   public void testStudentDropAndReEnrollCST599AndVerifyTranscript() throws InterruptedException {
-    // 1. Login as sama
+    // Login as sama
     doLogin(STUDENT_EMAIL, STUDENT_PASSWORD);
 
-    // 2. Navigate to Schedule view
+    // Navigate to Schedule view
     WebElement scheduleNav = wait.until(ExpectedConditions.elementToBeClickable(
         By.xpath("//a[contains(., 'Schedule') or contains(., 'My Class Schedule')]")));
     scheduleNav.click();
     slow();
 
-    // 3. Select Fall 2025 term and get schedule (if inputs exist)
+    // Select Fall 2025 term and get schedule (if inputs exist)
     try {
       WebElement yearInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
           By.xpath("//input[@name='year' or @placeholder='Year']")));
@@ -127,7 +127,7 @@ public class studentEnrollSystemTest {
         By.xpath("//h3[contains(.,'My Class Schedule')]")));
     slow();
 
-    // 4. Drop CST599 if present
+    // Drop CST599 if present
     try {
       WebElement cst599Row = wait.until(ExpectedConditions.visibilityOfElementLocated(
           By.xpath("//tr[.//td[contains(.,'cst599')]]")));
@@ -141,13 +141,13 @@ public class studentEnrollSystemTest {
       // not enrolled yet, that's fine
     }
 
-    // 5. Navigate to enrollment / open sections page
+    // Navigate to enrollment / open sections page
     WebElement enrollNav = wait.until(ExpectedConditions.elementToBeClickable(
         By.xpath("//a[contains(., 'Enroll') or contains(., 'Open Sections')]")));
     enrollNav.click();
     slow();
 
-    // 6. Select Fall 2025 to fetch open sections if applicable
+    // Select Fall 2025 to fetch open sections if applicable
     try {
       WebElement yearInputEnroll = wait.until(ExpectedConditions.visibilityOfElementLocated(
           By.xpath("//input[@name='year' or @placeholder='Year']")));
@@ -165,7 +165,7 @@ public class studentEnrollSystemTest {
       // term selection might be auto-handled
     }
 
-    // 7. Find CST599 in open sections and click Add
+    // Find CST599 in open sections and click Add
     WebElement cst599OpenRow = wait.until(ExpectedConditions.visibilityOfElementLocated(
         By.xpath("//tr[.//td[contains(.,'cst599')]]")));
     slow();
@@ -181,7 +181,7 @@ public class studentEnrollSystemTest {
     transcriptNav.click();
     slow();
 
-    // 9. Verify CST599 appears with no grade
+    //  Verify CST599 appears with no grade
     wait.until(ExpectedConditions.visibilityOfElementLocated(
         By.xpath("//h3[contains(.,'Transcript')]")));
     slow();
