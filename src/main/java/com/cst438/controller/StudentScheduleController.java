@@ -46,99 +46,70 @@ public class StudentScheduleController {
     public EnrollmentDTO addCourse(
             @PathVariable int sectionNo,
             Principal principal ) throws Exception  {
-        // Create the Enrollment entity
-        Enrollment enrollment = new Enrollment();
 
+        // create and save an EnrollmentEntity
         //  relate enrollment to the student's User entity and to the Section entity
-        User student = userRepository.findByEmail(principal.getName());
-        if (student == null || !student.getType().equals("STUDENT")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid student credentials");
-        }
-        enrollment.setStudent(student);
-
-        Section section = sectionRepository.findById(sectionNo).orElse(null);
-        if (section == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Section not found");
-        }
-        enrollment.setSection(section);
-
         //  check that student is not already enrolled in the section
-        Enrollment existingEnrollment = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionNo, student.getId());
-        if (existingEnrollment != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student already enrolled in this section");
+        //  check that current data is not before addDate, not after addDeadline
+        User student = userRepository.findByEmail(principal.getName());
+        Section s = sectionRepository.findById(sectionNo).orElse(null);
+        if (s==null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "section not found");
+        }
+        Term t = s.getTerm();
+        Enrollment e = enrollmentRepository.findEnrollmentBySectionNoAndStudentId(sectionNo, student.getId());
+        if (e!=null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "already enrolled");
+        }
+        Date now = new Date();
+        if (now.after(t.getAddDeadline()) || now.before(t.getAddDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "too early or too late to enroll");
         }
 
-        //  check that the current date is not before addDate, not after addDeadline
-        //  of the section's term.
-        Date currentDate = new Date();
-        Term term = section.getTerm();
-        if (currentDate.before(term.getAddDate()) || currentDate.after(term.getAddDeadline())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enrollment period is closed");
-        }
+        e = new Enrollment();
+        e.setSection(s);
+        e.setStudent(student);
+        enrollmentRepository.save(e);
 
-        enrollment.setGrade(null); // Grade is null until assigned by the instructor
-        // Save the Enrollment entity
-        enrollmentRepository.save(enrollment);
-
-        // Return an EnrollmentDTO with the id of the
-        // Enrollment and other fields.
-        EnrollmentDTO enrollmentDTO = new EnrollmentDTO(
-                enrollment.getEnrollmentId(),
-                enrollment.getGrade(),
-                student.getId(),
-                student.getName(),
-                student.getEmail(),
-                section.getCourse().getCourseId(),
-                section.getCourse().getTitle(),
-                section.getSectionId(),
-                section.getSectionNo(),
-                section.getBuilding(),
-                section.getRoom(),
-                section.getTimes(),
-                section.getCourse().getCredits(),
-                term.getYear(),
-                term.getSemester()
+        EnrollmentDTO result = new EnrollmentDTO(
+                e.getEnrollmentId(),
+                e.getGrade(),
+                e.getStudent().getId(),
+                e.getStudent().getName(),
+                e.getStudent().getEmail(),
+                e.getSection().getCourse().getCourseId(),
+                e.getSection().getCourse().getTitle(),
+                e.getSection().getSectionId(),
+                e.getSection().getSectionNo(),
+                e.getSection().getBuilding(),
+                e.getSection().getRoom(),
+                e.getSection().getTimes(),
+                e.getSection().getCourse().getCredits(),
+                e.getSection().getTerm().getYear(),
+                e.getSection().getTerm().getSemester()
         );
-        gradebook.sendMessage("addEnrollment", enrollmentDTO);
-
-
-        return enrollmentDTO;
+        gradebook.sendMessage("addEnrollment", result);
+        return result;
     }
 
     // student drops a course
     @DeleteMapping("/enrollments/{enrollmentId}")
     @PreAuthorize("hasAuthority('SCOPE_ROLE_STUDENT')")
     public void dropCourse(@PathVariable("enrollmentId") int enrollmentId, Principal principal) throws Exception {
-        // Retrieve the logged-in student's User entity
-        User student = userRepository.findByEmail(principal.getName());
-        if (student == null || !student.getType().equals("STUDENT")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid student credentials");
-        }
-
-        // Retrieve the enrollment by enrollmentId
-        Enrollment enrollment = enrollmentRepository.findById(enrollmentId).orElse(null);
-        if (enrollment == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enrollment not found");
-        }
 
         // check that enrollment belongs to the logged in student
-        // and that today is not after the dropDeadLine for the term.
-        if (enrollment.getStudent().getId() != student.getId()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enrollment does not belong to the student");
+
+        Enrollment e = enrollmentRepository.findById(enrollmentId).orElse(null);
+        if (e==null || !e.getStudent().getEmail().equals(principal.getName()))  {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid enrollment id");
         }
-
-        Date currentDate = new Date();
-        Term term = enrollment.getSection().getTerm();
-        if (currentDate.after(term.getDropDeadline())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Drop period has ended");
+        // check that today is not after dropDeadline
+        Date now = new Date();
+        if (now.after(e.getSection().getTerm().getDropDeadline())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "cannot drop due to date");
         }
-
-        // Delete the enrollment
-        enrollmentRepository.deleteById(enrollmentId);
-
-        // Send message to gradebook service
+        enrollmentRepository.delete(e);
         gradebook.sendMessage("deleteEnrollment", enrollmentId);
-
     }
 
 }
