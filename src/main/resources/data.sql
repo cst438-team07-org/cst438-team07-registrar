@@ -11,7 +11,9 @@ insert into user_table (id, name, email, password, type) values
 (5, 'samb', 'sam2@csumb.edu', '$2a$10$B3E9IWa9fCy1SaMzfg1czu312d0xRAk1OU2sw5WOE7hs.SsLqGE9O', 'STUDENT'),
 (6, 'samc', 'sam3@csumb.edu', '$2a$10$B3E9IWa9fCy1SaMzfg1czu312d0xRAk1OU2sw5WOE7hs.SsLqGE9O', 'STUDENT'),
 (7, 'sam',  'sam4@csumb.edu', '$2a$10$B3E9IWa9fCy1SaMzfg1czu312d0xRAk1OU2sw5WOE7hs.SsLqGE9O', 'STUDENT'),
-(8, 'ted', 'ted2@csumb.edu', '$2a$10$YU83ETxvPriw/t2Kd2wO8u8LoKRtl9auX2MsUAtNIIQuKROBvltdy', 'INSTRUCTOR');
+(8, 'ted', 'ted2@csumb.edu', '$2a$10$YU83ETxvPriw/t2Kd2wO8u8LoKRtl9auX2MsUAtNIIQuKROBvltdy', 'INSTRUCTOR'),
+(9, 'sally', 'sally@csumb.edu', '$2a$10$LbnNBkctBxuHlZDdaKMW6OPIFkPHvKJ/8WaT4ZtA6KdR/ANm/dA0O', 'INSTRUCTOR'),
+(10, 'bob', 'bob@csumb.edu', '$2a$10$/CdPw/L6tWg0bNewmIFgmO2k2sZpVbYFYzvLZeT5b2o.xX2Pt78RK', 'STUDENT');
 
 insert into course values
 ('cst336', 'Internet Programming', 4),
@@ -19,7 +21,11 @@ insert into course values
 ('cst363', 'Introduction to Database', 4),
 ('cst489', 'Software Engineering', 4),
 ('cst499', 'Capstone', 4),
-('cst599', 'Independent Study', 3);
+('cst599', 'AI Development', 4),
+('cst393', 'Software Engineering Project', 4),
+('cst328', 'Digital art and design', 4),
+('cst370', 'Design and Analysis Algorithms', 4),
+('cst383', 'Introduction to Data Science', 4);
 
 insert into section (section_no, course_id, section_id, term_id, building, room, times, instructor_email) values
 (1, 'cst489', 1, 10, '90', 'B104', 'W F 10-11', 'ted@csumb.edu'),
@@ -29,14 +35,22 @@ insert into section (section_no, course_id, section_id, term_id, building, room,
 (5, 'cst334', 1, 10, '90', 'B100', 'T H 10-11', 'ted@csumb.edu'),
 (6, 'cst334', 2, 10, '90', 'B101', 'M W 10-11', 'ted2@csumb.edu');
 
+-- add open sections for Fall 2025
+insert into section (section_no, course_id, section_id, term_id, building, room, times, instructor_email) values
+(7, 'cst336',  2, 10, '90',  'B105', 'M W 9-10',  'ted@csumb.edu'),
+(8, 'cst499',  3, 10, '90',  'B106', 'T Th 11-12','sally@csumb.edu'),
+(9, 'cst393', 10, 10, '92', 'B107', 'M W 2-4', 'sally@csumb.edu'),
+(10, 'cst370', 11, 10, '95', 'B110', 'F 8-10', 'ted@csumb.edu'),
+(11, 'cst599', 12, 10, '90', 'B108', 'M W 3-5', 'ted@csumb.edu');
+
 -- add some open sections for Spring 2025 too
 insert into section (section_no, course_id, section_id, term_id, building, room, times, instructor_email) values
-(4, 'cst334',  4, 9, '01',  '201', 'T Th 1-2',   'ted@csumb.edu'),
-(5, 'cst363',  5, 9, '01',  '202', 'M W 10-11', 'ted@csumb.edu'),
-(6, 'cst328',  6, 9, '01',  '203', 'T F 6-9', 'ted@csumb.edu'),
-(7, 'cst370',  7, 9, '01',  '205', 'M TH 1-4', 'sally@csumb.edu'),
-(8, 'cst383',  8, 9, '01',  '208', 'W F 9-11', 'sally@csumb.edu'),
-(9, 'cst393',  9, 9, '01',  '209', 'T TH 2-6', 'sally@csumb.edu');
+(12, 'cst334',  4, 9, '01',  '201', 'T Th 1-2',   'ted@csumb.edu'),
+(13, 'cst363',  5, 9, '01',  '202', 'M W 10-11', 'ted@csumb.edu'),
+(14, 'cst328',  6, 9, '01',  '203', 'T F 6-9', 'ted@csumb.edu'),
+(15, 'cst370',  7, 9, '01',  '205', 'M TH 1-4', 'sally@csumb.edu'),
+(16, 'cst383',  8, 9, '01',  '208', 'W F 9-11', 'sally@csumb.edu'),
+(17, 'cst393',  9, 9, '01',  '209', 'T TH 2-6', 'sally@csumb.edu');
 
 -- students sama, samb and samc enrolled into cst599-1 Fall 2025
 insert into enrollment (enrollment_id, grade, section_no, user_id) values
@@ -49,3 +63,6 @@ insert into enrollment (enrollment_id, grade, section_no, user_id) values
 (7, null, 1, 7),
 (8, null, 5, 7),
 (9, null, 3, 7);
+
+-- initial enrollment of sama (user_id=6) in CST599 Fall 2025 section 12 with no grade
+INSERT INTO enrollment (section_no, user_id, grade) VALUES (12, 6, NULL);

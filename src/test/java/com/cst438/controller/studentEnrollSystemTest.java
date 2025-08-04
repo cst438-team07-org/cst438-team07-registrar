@@ -23,8 +23,8 @@ public class studentEnrollSystemTest {
 
   static final String CHROME_DRIVER_FILE_LOCATION = "C:/chromedriver_win64/chromedriver.exe";
   static final String URL = "http://localhost:5173";
-  static final String STUDENT_EMAIL = "sama@csumb.edu";
-  static final String STUDENT_PASSWORD = "sama2025";
+  static final String STUDENT_EMAIL = "sam1@csumb.edu";
+  static final String STUDENT_PASSWORD = "sam2025";
 
   // Slow mode configuration
   private static final boolean SLOW_MO = true;
