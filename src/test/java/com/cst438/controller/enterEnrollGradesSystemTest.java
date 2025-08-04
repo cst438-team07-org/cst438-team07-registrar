@@ -19,44 +19,35 @@ import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class studentEnrollSystemTest {
+public class enterEnrollGradesSystemTest {
 
   static final String CHROME_DRIVER_FILE_LOCATION = "C:/chromedriver_win64/chromedriver.exe";
   static final String URL = "http://localhost:5173";
-  static final String STUDENT_EMAIL = "sama@csumb.edu";
-  static final String STUDENT_PASSWORD = "sama2025";
-
-  // Slow mode configuration
-  private static final boolean SLOW_MO = true;
-  private static final long SLOW_DELAY_MS = 1200;
-
+  static final int DELAY = 3000; // 3 seconds
+  static final String INSTRUCTOR_EMAIL = "ted@csumb.edu";
+  static final String INSTRUCTOR_PASSWORD = "ted2025";
+  static final String STUDENT_EMAIL = "samb@csumb.edu";
+  static final String STUDENT_PASSWORD = "sam2025";
   WebDriver driver;
-  WebDriverWait wait;
+  Wait<WebDriver> wait;
 
   @BeforeEach
   public void setUpDriver() {
     System.setProperty("webdriver.chrome.driver", CHROME_DRIVER_FILE_LOCATION);
     ChromeOptions opts = new ChromeOptions();
-    opts.addArguments("--remote-allow-origins=*");
-    driver = new ChromeDriver(opts);
+    ops.addArguments("--remote-allow-origins=*");
+    driver = new ChromeDriver(ops);
     driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(2));
-    wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+    wait = new WebDriverWait(driver, Duration.ofSeconds(2));
     driver.get(URL);
     driver.manage().window().maximize();
   }
 
   @AfterEach
-  public void tearDown() {
-    if (driver != null) driver.quit();
-  }
-
-  private void slow() {
-    if (SLOW_MO) {
-      try {
-        Thread.sleep(SLOW_DELAY_MS);
-      } catch (InterruptedException ignored) {}
+  public void quit() {
+        driver.quit();
     }
-  }
+
 
   private void doLogin(String email, String password) {
     WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("email")));
@@ -94,9 +85,10 @@ public class studentEnrollSystemTest {
   }
 
   @Test
-  public void testStudentDropAndReEnrollCST599AndVerifyTranscript() throws InterruptedException {
+  public void testEnterEnrollGrades() throws InterruptedException {
+    Alert alert;
     // Login as sama
-    doLogin(STUDENT_EMAIL, STUDENT_PASSWORD);
+    doLogin(INSTRUCTOR_EMAIL, INSTRUCTOR_PASSWORD);
 
     // Navigate to Schedule view
     WebElement scheduleNav = wait.until(ExpectedConditions.elementToBeClickable(
