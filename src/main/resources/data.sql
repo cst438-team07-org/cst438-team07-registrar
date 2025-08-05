@@ -3,6 +3,7 @@ insert into term (term_id, tyear, semester, add_date, add_deadline, drop_deadlin
 (10, 2025, 'Fall',  '2025-04-01', '2025-09-30', '2025-09-30', '2025-08-20', '2025-12-17'),
 (11, 2026, 'Spring', '2025-12-01', '2026-01-30', '2026-02-01', '2026-01-15', '2026-05-17');
 
+
 insert into user_table (id, name, email, password, type) values
 (1, 'admin', 'admin@csumb.edu', '$2a$10$8cjz47bjbR4Mn8GMg9IZx.vyjhLXR/SKKMSZ9.mP9vpMu0ssKi8GW' , 'ADMIN'),
 (2, 'sam', 'sam@csumb.edu', '$2a$10$B3E9IWa9fCy1SaMzfg1czu312d0xRAk1OU2sw5WOE7hs.SsLqGE9O', 'STUDENT'),
@@ -21,7 +22,7 @@ insert into course values
 ('cst363', 'Introduction to Database', 4),
 ('cst489', 'Software Engineering', 4),
 ('cst499', 'Capstone', 4),
-('cst599', 'AI Development', 4),
+('cst599', 'Independent Study', 4),
 ('cst393', 'Software Engineering Project', 4),
 ('cst328', 'Digital art and design', 4),
 ('cst370', 'Design and Analysis Algorithms', 4),
