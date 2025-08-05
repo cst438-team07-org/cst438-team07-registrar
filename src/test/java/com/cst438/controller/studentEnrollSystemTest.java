@@ -29,8 +29,8 @@ public class studentEnrollSystemTest {
 
   static final String CHROME_DRIVER_FILE_LOCATION = "/Users/ka_l/Desktop/CST438/chromedriver-mac-arm64/chromedriver";
   static final String URL = "http://localhost:5173";
-  static final String STUDENT_EMAIL = "sam1@csumb.edu";
-  static final String STUDENT_PASSWORD = "sam2025";
+ // static final String STUDENT_EMAIL = "sam1@csumb.edu";
+ // static final String STUDENT_PASSWORD = "sam2025";
 
   // Slow mode configuration
   private static final boolean SLOW_MO = true;
@@ -108,7 +108,7 @@ public class studentEnrollSystemTest {
   @Test
   public void testStudentDropAndReEnrollCST599AndVerifyTranscript() throws InterruptedException {
     // Login as sama
-    doLogin(STUDENT_EMAIL, STUDENT_PASSWORD);
+    doLogin("sam1@csumb.edu", "sam2025");
 
     // Navigate to Schedule view
     WebElement scheduleNav = wait.until(ExpectedConditions.elementToBeClickable(

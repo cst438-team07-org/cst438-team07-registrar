@@ -59,5 +59,13 @@ insert into section (section_no, course_id, section_id, term_id, building, room,
 
 
 -- initial enrollment of sama (user_id=6) in CST599 Fall 2025 section 12 with no grade
-INSERT INTO enrollment ( enrollment_id, grade, section_no, user_id) VALUES (10000, NULL, 2, 4);
+INSERT INTO enrollment ( enrollment_id, grade, section_no, user_id) VALUES (10000, NULL, 2, 4),
+                                                                           (10002, null, 2, 5),
+                                                                           (10003, null, 2, 6),
+                                                                           (10004, null, 1, 2),
+                                                                           (10005, null, 2, 2),
+                                                                           (10006, null, 3, 2),
+                                                                           (10007, null, 1, 7),
+                                                                           (10008, null, 5, 7),
+                                                                           (10009, null, 3, 7);
 
