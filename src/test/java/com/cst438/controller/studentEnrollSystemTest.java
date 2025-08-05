@@ -1,9 +1,14 @@
 package com.cst438.controller;
 
+import java.util.List;
 import java.util.Random;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -19,6 +24,7 @@ import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestMethodOrder(OrderAnnotation.class)
 public class studentEnrollSystemTest {
 
   static final String CHROME_DRIVER_FILE_LOCATION = "/Users/ka_l/Desktop/CST438/chromedriver-mac-arm64/chromedriver";
@@ -59,7 +65,8 @@ public class studentEnrollSystemTest {
   }
 
   private void doLogin(String email, String password) {
-    WebElement emailInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("email")));
+    WebElement emailInput = wait.until(
+        ExpectedConditions.visibilityOfElementLocated(By.id("email")));
     emailInput.clear();
     emailInput.sendKeys(email);
 
@@ -70,11 +77,9 @@ public class studentEnrollSystemTest {
     driver.findElement(By.id("loginButton")).click();
     slow();
 
-    // Wait for a post-login indicator (schedule/transcript links or username)
-    wait.until(ExpectedConditions.or(
-        ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(.,'Schedule')]")),
-        ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(.,'Transcript')]"))
-    ));
+    // Wait for the Logout link to appear (indicates we’re past login)
+    wait.until(ExpectedConditions.visibilityOfElementLocated(
+        By.xpath("//a[contains(text(),'Logout') or @id='logout']")));
     slow();
   }
 
@@ -93,6 +98,7 @@ public class studentEnrollSystemTest {
     }
   }
 
+  @Order(1)
   @Test
   public void testStudentDropAndReEnrollCST599AndVerifyTranscript() throws InterruptedException {
     // Login as sama
@@ -196,4 +202,75 @@ public class studentEnrollSystemTest {
     assertTrue(noGrade, "Expected no grade for CST599 but found: '" + gradeText + "'");
     slow();
   }
+
+  private void doInstructorLogin(String email, String password) {
+    WebElement emailInput = wait.until(
+        ExpectedConditions.visibilityOfElementLocated(By.id("email")));
+    emailInput.clear();
+    emailInput.sendKeys(email);
+
+    WebElement passwordInput = driver.findElement(By.id("password"));
+    passwordInput.clear();
+    passwordInput.sendKeys(password);
+
+    driver.findElement(By.id("loginButton")).click();
+    slow();
+
+    wait.until(ExpectedConditions.visibilityOfElementLocated(
+        By.xpath("//a[contains(text(),'Sections')]")
+    ));
+    slow();
+  }
+
+
+  @Order(2)
+  @Test
+  public void testInstructorViewCST599Roster() throws InterruptedException {
+    // 1. Login as instructor
+    doInstructorLogin("ted@csumb.edu", "ted2025");
+
+    // 2. Navigate to the Section List view
+    driver.get(URL + "/sections");
+    slow();
+
+    // 3. Select Fall 2025 term
+    try {
+      WebElement yearInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
+          By.xpath("//input[@name='year' or @placeholder='Year']")));
+      yearInput.clear();
+      yearInput.sendKeys("2025");
+      slow();
+      WebElement semesterInput = driver.findElement(
+          By.xpath("//input[@name='semester' or @placeholder='Semester']"));
+      semesterInput.clear();
+      semesterInput.sendKeys("Fall");
+      slow();
+      WebElement getSections = driver.findElement(
+          By.xpath("//button[contains(.,'Get Sections') or contains(.,'List Sections')]"));
+      getSections.click();
+      slow();
+    } catch (Exception ignored) {
+      // if term is implicit, proceed
+    }
+
+    // 4. Find the CST599 row and click “View Enrollments” (or similar)
+    WebElement cst599Row = wait.until(ExpectedConditions.visibilityOfElementLocated(
+        By.xpath("//tr[.//td[contains(.,'cst599')]]")));
+    slow();
+    WebElement viewEnrollBtn = cst599Row.findElement(
+        By.xpath(".//button[contains(.,'View') and contains(.,'Enroll')]"));
+    viewEnrollBtn.click();
+    slow();
+
+    // 5. Verify the roster table lists “sama@csumb.edu” exactly once
+    wait.until(ExpectedConditions.visibilityOfElementLocated(
+        By.xpath("//h3[contains(.,'Enrollments')]")));
+    slow();
+
+    List<WebElement> samaEntries = driver.findElements(
+        By.xpath("//td[contains(.,'sama@csumb.edu')]"));
+    assertEquals(1, samaEntries.size(), "Expected exactly one entry for sama in CST599 roster");
+    slow();
+  }
+
 }
