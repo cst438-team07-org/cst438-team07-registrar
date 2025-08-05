@@ -29,8 +29,8 @@ public class studentEnrollSystemTest {
 
   static final String CHROME_DRIVER_FILE_LOCATION = "/Users/ka_l/Desktop/CST438/chromedriver-mac-arm64/chromedriver";
   static final String URL = "http://localhost:5173";
-  static final String STUDENT_EMAIL = "sama@csumb.edu";
-  static final String STUDENT_PASSWORD = "sama2025";
+  static final String STUDENT_EMAIL = "sam1@csumb.edu";
+  static final String STUDENT_PASSWORD = "sam2025";
 
   // Slow mode configuration
   private static final boolean SLOW_MO = true;
@@ -53,40 +53,41 @@ public class studentEnrollSystemTest {
 
   @AfterEach
   public void tearDown() {
-    if (driver != null) driver.quit();
+    if (driver != null)
+      driver.quit();
   }
 
   private void slow() {
     if (SLOW_MO) {
       try {
         Thread.sleep(SLOW_DELAY_MS);
-      } catch (InterruptedException ignored) {}
+      } catch (InterruptedException ignored) {
+      }
     }
   }
 
   private void doLogin(String email, String password) {
-    WebElement emailInput = wait.until(
+    WebElement e = wait.until(
         ExpectedConditions.visibilityOfElementLocated(By.id("email")));
-    emailInput.clear();
-    emailInput.sendKeys(email);
-
-    WebElement passwordInput = driver.findElement(By.id("password"));
-    passwordInput.clear();
-    passwordInput.sendKeys(password);
-
+    e.clear();
+    e.sendKeys(email);
+    WebElement p = driver.findElement(By.id("password"));
+    p.clear();
+    p.sendKeys(password);
     driver.findElement(By.id("loginButton")).click();
     slow();
-
-    // Wait for the Logout link to appear (indicates we’re past login)
+    // this guarantees past the login page:
     wait.until(ExpectedConditions.visibilityOfElementLocated(
-        By.xpath("//a[contains(text(),'Logout') or @id='logout']")));
+        By.xpath("//a[contains(text(),'Logout')]")));
     slow();
   }
+
 
   private void handleReactConfirmIfPresent() {
     try {
       WebElement yesBtn = wait.until(ExpectedConditions.visibilityOfElementLocated(
-          By.xpath("//div[contains(@class,'react-confirm-alert-button-group')]//button[.='Yes' or .='Confirm' or .='OK']")));
+          By.xpath(
+              "//div[contains(@class,'react-confirm-alert-button-group')]//button[.='Yes' or .='Confirm' or .='OK']")));
       yesBtn.click();
       slow();
     } catch (Exception e) {
@@ -94,8 +95,13 @@ public class studentEnrollSystemTest {
         Alert alert = wait.until(ExpectedConditions.alertIsPresent());
         alert.accept();
         slow();
-      } catch (Exception ignored) {}
+      } catch (Exception ignored) {
+      }
     }
+  }
+
+  private void doInstructorLogin(String email, String password) {
+    doLogin(email, password);
   }
 
   @Order(1)
@@ -117,7 +123,8 @@ public class studentEnrollSystemTest {
       yearInput.clear();
       yearInput.sendKeys("2025");
       slow();
-      WebElement semesterInput = driver.findElement(By.xpath("//input[@name='semester' or @placeholder='Semester']"));
+      WebElement semesterInput = driver.findElement(
+          By.xpath("//input[@name='semester' or @placeholder='Semester']"));
       semesterInput.clear();
       semesterInput.sendKeys("Fall");
       slow();
@@ -144,7 +151,6 @@ public class studentEnrollSystemTest {
       handleReactConfirmIfPresent();
       slow();
     } catch (Exception ignore) {
-      // not enrolled yet, that's fine
     }
 
     // Navigate to enrollment / open sections page
@@ -160,7 +166,8 @@ public class studentEnrollSystemTest {
       yearInputEnroll.clear();
       yearInputEnroll.sendKeys("2025");
       slow();
-      WebElement semesterInputEnroll = driver.findElement(By.xpath("//input[@name='semester' or @placeholder='Semester']"));
+      WebElement semesterInputEnroll = driver.findElement(
+          By.xpath("//input[@name='semester' or @placeholder='Semester']"));
       semesterInputEnroll.clear();
       semesterInputEnroll.sendKeys("Fall");
       slow();
@@ -168,8 +175,7 @@ public class studentEnrollSystemTest {
       getSections.click();
       slow();
     } catch (Exception ignored) {
-      // term selection might be auto-handled
-    }
+     }
 
     // Find CST599 in open sections and click Add
     WebElement cst599OpenRow = wait.until(ExpectedConditions.visibilityOfElementLocated(
@@ -198,27 +204,10 @@ public class studentEnrollSystemTest {
 
     WebElement gradeCell = transcriptRow.findElement(By.xpath("./td[last()]"));
     String gradeText = gradeCell.getText().trim();
-    boolean noGrade = gradeText.isEmpty() || gradeText.equals("-") || gradeText.equalsIgnoreCase("TBD") || gradeText.equalsIgnoreCase("null");
+    boolean noGrade =
+        gradeText.isEmpty() || gradeText.equals("-") || gradeText.equalsIgnoreCase("TBD")
+            || gradeText.equalsIgnoreCase("null");
     assertTrue(noGrade, "Expected no grade for CST599 but found: '" + gradeText + "'");
-    slow();
-  }
-
-  private void doInstructorLogin(String email, String password) {
-    WebElement emailInput = wait.until(
-        ExpectedConditions.visibilityOfElementLocated(By.id("email")));
-    emailInput.clear();
-    emailInput.sendKeys(email);
-
-    WebElement passwordInput = driver.findElement(By.id("password"));
-    passwordInput.clear();
-    passwordInput.sendKeys(password);
-
-    driver.findElement(By.id("loginButton")).click();
-    slow();
-
-    wait.until(ExpectedConditions.visibilityOfElementLocated(
-        By.xpath("//a[contains(text(),'Sections')]")
-    ));
     slow();
   }
 
@@ -226,51 +215,39 @@ public class studentEnrollSystemTest {
   @Order(2)
   @Test
   public void testInstructorViewCST599Roster() throws InterruptedException {
-    // 1. Login as instructor
+    // Login as instructor
     doInstructorLogin("ted@csumb.edu", "ted2025");
 
-    // 2. Navigate to the Section List view
-    driver.get(URL + "/sections");
-    slow();
+    // Select Fall 2025 term and get sections
+    WebElement yearInput = wait.until(ExpectedConditions.elementToBeClickable(
+        By.xpath("//input[@name='year' or @placeholder='Year']")));
+    yearInput.clear(); yearInput.sendKeys("2025"); slow();
+    WebElement semesterInput = driver.findElement(
+        By.xpath("//input[@name='semester' or @placeholder='Semester']"));
+    semesterInput.clear(); semesterInput.sendKeys("Fall"); slow();
+    driver.findElement(By.xpath("//button[contains(.,'Get Sections')]")).click(); slow();
 
-    // 3. Select Fall 2025 term
-    try {
-      WebElement yearInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
-          By.xpath("//input[@name='year' or @placeholder='Year']")));
-      yearInput.clear();
-      yearInput.sendKeys("2025");
-      slow();
-      WebElement semesterInput = driver.findElement(
-          By.xpath("//input[@name='semester' or @placeholder='Semester']"));
-      semesterInput.clear();
-      semesterInput.sendKeys("Fall");
-      slow();
-      WebElement getSections = driver.findElement(
-          By.xpath("//button[contains(.,'Get Sections') or contains(.,'List Sections')]"));
-      getSections.click();
-      slow();
-    } catch (Exception ignored) {
-      // if term is implicit, proceed
-    }
-
-    // 4. Find the CST599 row and click “View Enrollments” (or similar)
-    WebElement cst599Row = wait.until(ExpectedConditions.visibilityOfElementLocated(
-        By.xpath("//tr[.//td[contains(.,'cst599')]]")));
-    slow();
-    WebElement viewEnrollBtn = cst599Row.findElement(
-        By.xpath(".//button[contains(.,'View') and contains(.,'Enroll')]"));
-    viewEnrollBtn.click();
-    slow();
-
-    // 5. Verify the roster table lists “sama@csumb.edu” exactly once
+    // Wait for Sections heading
     wait.until(ExpectedConditions.visibilityOfElementLocated(
-        By.xpath("//h3[contains(.,'Enrollments')]")));
-    slow();
+        By.xpath("//h3[contains(.,'Sections')]")
+    )); slow();
 
-    List<WebElement> samaEntries = driver.findElements(
-        By.xpath("//td[contains(.,'sama@csumb.edu')]"));
-    assertEquals(1, samaEntries.size(), "Expected exactly one entry for sama in CST599 roster");
-    slow();
+    // Find CST599 row and click its Enrollments link
+    WebElement row = wait.until(ExpectedConditions.visibilityOfElementLocated(
+        By.xpath("//tr[.//td[contains(text(),'cst599')]]")
+    )); slow();
+
+    // click the Link
+    row.findElement(By.id("enrollmentsLink")).click(); slow();
+
+    // Verify Sama appears once
+    wait.until(ExpectedConditions.visibilityOfElementLocated(
+        By.xpath("//h3[contains(.,'Enrollments')]")
+    )); slow();
+    List<WebElement> entries = driver.findElements(
+        By.xpath("//td[contains(text(),'sam1@csumb.edu')]")
+    );
+    assertEquals(1, entries.size(),
+        "Expected exactly one sama entry in roster"); slow();
   }
-
 }
