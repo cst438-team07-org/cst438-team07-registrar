@@ -25,7 +25,7 @@ insert into course values
 ('cst363', 'Introduction to Database', 4),
 ('cst489', 'Software Engineering', 4),
 ('cst499', 'Capstone', 4),
-('cst599', 'AI Development', 4),
+('cst599', 'Independent Study', 4),
 ('cst393', 'Software Engineering Project', 4),
 ('cst328', 'Digital art and design', 4),
 ('cst370', 'Design and analysis algorithms', 4),
@@ -59,7 +59,7 @@ insert into section (section_no, course_id, section_id, term_id, building, room,
 
 
 -- initial enrollment of sama (user_id=6) in CST599 Fall 2025 section 12 with no grade
-INSERT INTO enrollment ( enrollment_id, grade, section_no, user_id) VALUES (10000, NULL, 2, 4),
+INSERT INTO enrollment ( enrollment_id, grade, section_no, user_id) VALUES (1, NULL, 2, 4),
                                                                            (10002, null, 2, 5),
                                                                            (10003, null, 2, 6),
                                                                            (10004, null, 1, 2),

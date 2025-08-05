@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(OrderAnnotation.class)
 public class studentEnrollSystemTest {
 
-  static final String CHROME_DRIVER_FILE_LOCATION = "/Users/ka_l/Desktop/CST438/chromedriver-mac-arm64/chromedriver";
+  static final String CHROME_DRIVER_FILE_LOCATION = "C:/chromedriver_win64/chromedriver.exe";
   static final String URL = "http://localhost:5173";
  // static final String STUDENT_EMAIL = "sam1@csumb.edu";
  // static final String STUDENT_PASSWORD = "sam2025";
