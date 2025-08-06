@@ -17,7 +17,7 @@ import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class enterEnrollGradesSystemTest {
+public class EnterEnrollGradesSystemTest {
 
   static final String CHROME_DRIVER_FILE_LOCATION = "C:/chromedriver_win64/chromedriver.exe";
   static final String URL = "http://localhost:5173";

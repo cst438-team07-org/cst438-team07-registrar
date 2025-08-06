@@ -25,7 +25,7 @@ import java.time.Duration;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(OrderAnnotation.class)
-public class studentEnrollSystemTest {
+public class StudentEnrollSystemTest {
 
   static final String CHROME_DRIVER_FILE_LOCATION = "C:/chromedriver_win64/chromedriver.exe";
   static final String URL = "http://localhost:5173";
@@ -74,6 +74,7 @@ public class studentEnrollSystemTest {
     WebElement p = driver.findElement(By.id("password"));
     p.clear();
     p.sendKeys(password);
+    slow();
     driver.findElement(By.id("loginButton")).click();
     slow();
     // this guarantees past the login page:

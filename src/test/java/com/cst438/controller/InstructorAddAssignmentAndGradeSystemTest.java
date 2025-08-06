@@ -19,7 +19,7 @@ import java.util.Random;
 public class InstructorAddAssignmentAndGradeSystemTest {
 
   static final String CHROME_DRIVER_FILE_LOCATION =
-      "/Users/ka_l/Desktop/CST438/chromedriver-mac-arm64/chromedriver";
+      "C:/chromedriver_win64/chromedriver.exe";
   static final String URL = "http://localhost:5173";
 
   private WebDriver driver;
